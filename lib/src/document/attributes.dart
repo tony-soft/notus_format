@@ -1,4 +1,5 @@
 import 'package:collection/collection.dart';
+import 'package:notus_format/src/flutter/colors.dart';
 import 'package:quill_format/quill_format.dart';
 
 /// Scope of a style attribute, defines context in which an attribute can be
@@ -43,8 +44,7 @@ abstract class NotusAttributeBuilder<T> implements NotusAttributeKey<T> {
 
   NotusAttribute<T> get unset => NotusAttribute<T>._(key, scope, null);
 
-  NotusAttribute<T> withValue(T? value) =>
-      NotusAttribute<T>._(key, scope, value);
+  NotusAttribute<T> withValue(T? value) => NotusAttribute<T>._(key, scope, value);
 }
 
 /// Style attribute applicable to a segment of a Notus document.
@@ -69,6 +69,7 @@ abstract class NotusAttributeBuilder<T> implements NotusAttributeKey<T> {
 ///   * [NotusAttribute.bold]
 ///   * [NotusAttribute.italic]
 ///   * [NotusAttribute.underline]
+///   * [NotusAttribute.highlight]
 ///   * [NotusAttribute.strikethrough]
 ///   * [NotusAttribute.link]
 ///   * [NotusAttribute.fontSize]
@@ -85,6 +86,7 @@ class NotusAttribute<T> implements NotusAttributeBuilder<T> {
     NotusAttribute.bold.key: NotusAttribute.bold,
     NotusAttribute.italic.key: NotusAttribute.italic,
     NotusAttribute.underline.key: NotusAttribute.underline,
+    NotusAttribute.highlight.key: NotusAttribute.highlight,
     NotusAttribute.strikethrough.key: NotusAttribute.strikethrough,
     NotusAttribute.link.key: NotusAttribute.link,
     NotusAttribute.fontSize.key: NotusAttribute.fontSize,
@@ -108,6 +110,18 @@ class NotusAttribute<T> implements NotusAttributeBuilder<T> {
 
   /// Underline style attribute.
   static const underline = _UnderlineAttribute();
+
+  /// Highlight style attribute.
+  static const highlight = HighlightAttributeBuilder._();
+
+  /// Alias for [NotusAttribute.highlight.yellow].
+  static NotusAttribute<int> get highlightYellow => highlight.yellow;
+
+  /// Alias for [NotusAttribute.highlight.blue].
+  static NotusAttribute<int> get highlightBlue => highlight.blue;
+
+  /// Alias for [NotusAttribute.highlight.red].
+  static NotusAttribute<int> get highlightRed => highlight.red;
 
   /// Strikethrough style attribute.
   static const strikethrough = _StrikethroughAttribute();
@@ -184,8 +198,7 @@ class NotusAttribute<T> implements NotusAttributeBuilder<T> {
 
   static NotusAttribute _fromKeyValue(String key, dynamic value) {
     if (!_registry.containsKey(key)) {
-      throw ArgumentError.value(
-          key, 'No attribute with key "$key" registered.');
+      throw ArgumentError.value(key, 'No attribute with key "$key" registered.');
     }
     final builder = _registry[key]!;
     return builder.withValue(value);
@@ -227,17 +240,14 @@ class NotusAttribute<T> implements NotusAttributeBuilder<T> {
   bool get isInline => scope == NotusAttributeScope.inline;
 
   @override
-  NotusAttribute<T> withValue(T? value) =>
-      NotusAttribute<T>._(key, scope, value);
+  NotusAttribute<T> withValue(T? value) => NotusAttribute<T>._(key, scope, value);
 
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
     if (other is! NotusAttribute<T>) return false;
     NotusAttribute<T> typedOther = other;
-    return key == typedOther.key &&
-        scope == typedOther.scope &&
-        value == typedOther.value;
+    return key == typedOther.key && scope == typedOther.scope && value == typedOther.value;
   }
 
   @override
@@ -299,8 +309,7 @@ class NotusStyle {
   T? value<T>(NotusAttributeKey<T> key) => get(key)!.value;
 
   /// Returns [NotusAttribute] from this set by specified [key].
-  NotusAttribute<T>? get<T>(NotusAttributeKey<T> key) =>
-      _data[key.key] as NotusAttribute<T>?;
+  NotusAttribute<T>? get<T>(NotusAttributeKey<T> key) => _data[key.key] as NotusAttribute<T>?;
 
   /// Returns collection of all attribute keys in this set.
   Iterable<String> get keys => _data.keys;
@@ -352,10 +361,7 @@ class NotusStyle {
   }
 
   /// Returns JSON-serializable representation of this style.
-  Map<String, dynamic>? toJson() => _data.isEmpty
-      ? null
-      : _data.map<String, dynamic>((String _, NotusAttribute value) =>
-          MapEntry<String, dynamic>(value.key, value.value));
+  Map<String, dynamic>? toJson() => _data.isEmpty ? null : _data.map<String, dynamic>((String _, NotusAttribute value) => MapEntry<String, dynamic>(value.key, value.value));
 
   @override
   bool operator ==(Object other) {
@@ -393,8 +399,7 @@ class _UnderlineAttribute extends NotusAttribute<bool?> {
 
 /// Applies strikethrough style to a text segment.
 class _StrikethroughAttribute extends NotusAttribute<bool?> {
-  const _StrikethroughAttribute()
-      : super._('s', NotusAttributeScope.inline, true);
+  const _StrikethroughAttribute() : super._('s', NotusAttributeScope.inline, true);
 }
 
 /// Builder for link attribute values.
@@ -407,8 +412,7 @@ class LinkAttributeBuilder extends NotusAttributeBuilder<String> {
   const LinkAttributeBuilder._() : super._(_kLink, NotusAttributeScope.inline);
 
   /// Creates a link attribute with specified link [value].
-  NotusAttribute<String> fromString(String value) =>
-      NotusAttribute<String>._(key, scope, value);
+  NotusAttribute<String> fromString(String value) => NotusAttribute<String>._(key, scope, value);
 }
 
 /// Builder for font size attribute values.
@@ -418,12 +422,10 @@ class LinkAttributeBuilder extends NotusAttributeBuilder<String> {
 class FontSizeAttributeBuilder extends NotusAttributeBuilder<int> {
   static const _kFontSize = 'font-size';
 
-  const FontSizeAttributeBuilder._()
-      : super._(_kFontSize, NotusAttributeScope.inline);
+  const FontSizeAttributeBuilder._() : super._(_kFontSize, NotusAttributeScope.inline);
 
   /// Creates a font size attribute with specified color [value].
-  NotusAttribute<int> fromInt(int value) =>
-      NotusAttribute<int>._(key, scope, value);
+  NotusAttribute<int> fromInt(int value) => NotusAttribute<int>._(key, scope, value);
 }
 
 /// Builder for font family attribute values.
@@ -433,12 +435,10 @@ class FontSizeAttributeBuilder extends NotusAttributeBuilder<int> {
 class FontFamilyAttributeBuilder extends NotusAttributeBuilder<String> {
   static const _kFontFamily = 'font-family';
 
-  const FontFamilyAttributeBuilder._()
-      : super._(_kFontFamily, NotusAttributeScope.inline);
+  const FontFamilyAttributeBuilder._() : super._(_kFontFamily, NotusAttributeScope.inline);
 
   /// Creates a font size attribute with specified color [value].
-  NotusAttribute<String> fromString(String value) =>
-      NotusAttribute<String>._(key, scope, value);
+  NotusAttribute<String> fromString(String value) => NotusAttribute<String>._(key, scope, value);
 }
 
 /// Builder for color attribute values.
@@ -448,12 +448,10 @@ class FontFamilyAttributeBuilder extends NotusAttributeBuilder<String> {
 class ColorAttributeBuilder extends NotusAttributeBuilder<int> {
   static const _kColor = 'color';
 
-  const ColorAttributeBuilder._()
-      : super._(_kColor, NotusAttributeScope.inline);
+  const ColorAttributeBuilder._() : super._(_kColor, NotusAttributeScope.inline);
 
   /// Creates a color attribute with specified color [value].
-  NotusAttribute<int> fromInt(int value) =>
-      NotusAttribute<int>._(key, scope, value);
+  NotusAttribute<int> fromInt(int value) => NotusAttribute<int>._(key, scope, value);
 }
 
 /// Builder for background color attribute values.
@@ -463,12 +461,10 @@ class ColorAttributeBuilder extends NotusAttributeBuilder<int> {
 class BackgroundColorAttributeBuilder extends NotusAttributeBuilder<int> {
   static const _kBackgroundColor = 'background-color';
 
-  const BackgroundColorAttributeBuilder._()
-      : super._(_kBackgroundColor, NotusAttributeScope.inline);
+  const BackgroundColorAttributeBuilder._() : super._(_kBackgroundColor, NotusAttributeScope.inline);
 
   /// Creates a background color attribute with specified color [value].
-  NotusAttribute<int> fromInt(int value) =>
-      NotusAttribute<int>._(key, scope, value);
+  NotusAttribute<int> fromInt(int value) => NotusAttribute<int>._(key, scope, value);
 }
 
 /// Builder for heading attribute styles.
@@ -478,8 +474,7 @@ class BackgroundColorAttributeBuilder extends NotusAttributeBuilder<int> {
 class HeadingAttributeBuilder extends NotusAttributeBuilder<int> {
   static const _kHeading = 'heading';
 
-  const HeadingAttributeBuilder._()
-      : super._(_kHeading, NotusAttributeScope.line);
+  const HeadingAttributeBuilder._() : super._(_kHeading, NotusAttributeScope.line);
 
   /// Level 1 heading, equivalent of `H1` in HTML.
   NotusAttribute<int> get level1 => NotusAttribute<int>._(key, scope, 1);
@@ -497,8 +492,7 @@ class HeadingAttributeBuilder extends NotusAttributeBuilder<int> {
 class _CheckedAttribute extends NotusAttribute<bool> {
   static const _kChecked = 'checked';
 
-  const _CheckedAttribute()
-      : super._(_kChecked, NotusAttributeScope.line, true);
+  const _CheckedAttribute() : super._(_kChecked, NotusAttributeScope.line, true);
 }
 
 /// Builder for indent attribute values.
@@ -508,12 +502,10 @@ class _CheckedAttribute extends NotusAttribute<bool> {
 class IndentAttributeBuilder extends NotusAttributeBuilder<int> {
   static const _kIntent = 'indent';
 
-  const IndentAttributeBuilder._()
-      : super._(_kIntent, NotusAttributeScope.line);
+  const IndentAttributeBuilder._() : super._(_kIntent, NotusAttributeScope.line);
 
   /// Creates an indent attribute with specified [value].
-  NotusAttribute<int> fromInt(int value) =>
-      NotusAttribute<int>._(key, scope, value);
+  NotusAttribute<int> fromInt(int value) => NotusAttribute<int>._(key, scope, value);
 }
 
 /// Builder for paragraph alignment attribute styles.
@@ -523,19 +515,29 @@ class IndentAttributeBuilder extends NotusAttributeBuilder<int> {
 class AlignmentAttributeBuilder extends NotusAttributeBuilder<String> {
   static const _kAlignment = 'alignment';
 
-  const AlignmentAttributeBuilder._()
-      : super._(_kAlignment, NotusAttributeScope.line);
+  const AlignmentAttributeBuilder._() : super._(_kAlignment, NotusAttributeScope.line);
 
   /// Formats a block of lines to end
   NotusAttribute<String> get end => NotusAttribute<String>._(key, scope, 'end');
 
   /// Formats a block of lines to center
-  NotusAttribute<String> get center =>
-      NotusAttribute<String>._(key, scope, 'center');
+  NotusAttribute<String> get center => NotusAttribute<String>._(key, scope, 'center');
 
   /// Formats a block of lines to justify
-  NotusAttribute<String> get justify =>
-      NotusAttribute<String>._(key, scope, 'justify');
+  NotusAttribute<String> get justify => NotusAttribute<String>._(key, scope, 'justify');
+}
+
+/// Builder for highlight attribute styles.
+///
+/// There is no need to use this class directly, consider using
+/// [NotusAttribute.highlight] instead.
+class HighlightAttributeBuilder extends NotusAttributeBuilder<int> {
+  static const _kHighlight = 'underline'; // 기존에 사용하던 이름이 underline이라서 highlight 대신 underline을 사용한다.
+  const HighlightAttributeBuilder._() : super._(_kHighlight, NotusAttributeScope.inline);
+
+  NotusAttribute<int> get yellow => NotusAttribute<int>._(key, scope, Colors.yellow.withOpacity(0.3).value);
+  NotusAttribute<int> get blue => NotusAttribute<int>._(key, scope, Colors.blue.withOpacity(0.3).value);
+  NotusAttribute<int> get red => NotusAttribute<int>._(key, scope, Colors.red.withOpacity(0.3).value);
 }
 
 /// Builder for block attribute styles (number/bullet lists, code and quote).
@@ -548,22 +550,17 @@ class BlockAttributeBuilder extends NotusAttributeBuilder<String> {
   const BlockAttributeBuilder._() : super._(_kBlock, NotusAttributeScope.line);
 
   /// Formats a block of lines as a bullet list.
-  NotusAttribute<String> get bulletList =>
-      NotusAttribute<String>._(key, scope, 'ul');
+  NotusAttribute<String> get bulletList => NotusAttribute<String>._(key, scope, 'ul');
 
   /// Formats a block of lines as a number list.
-  NotusAttribute<String> get numberList =>
-      NotusAttribute<String>._(key, scope, 'ol');
+  NotusAttribute<String> get numberList => NotusAttribute<String>._(key, scope, 'ol');
 
   /// Formats a block of lines as a checkbox list.
-  NotusAttribute<String> get checkList =>
-      NotusAttribute<String>._(key, scope, 'cl');
+  NotusAttribute<String> get checkList => NotusAttribute<String>._(key, scope, 'cl');
 
   /// Formats a block of lines as a code snippet, using monospace font.
-  NotusAttribute<String> get code =>
-      NotusAttribute<String>._(key, scope, 'code');
+  NotusAttribute<String> get code => NotusAttribute<String>._(key, scope, 'code');
 
   /// Formats a block of lines as a quote.
-  NotusAttribute<String> get quote =>
-      NotusAttribute<String>._(key, scope, 'quote');
+  NotusAttribute<String> get quote => NotusAttribute<String>._(key, scope, 'quote');
 }
