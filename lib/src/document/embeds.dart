@@ -1,7 +1,5 @@
-import 'dart:collection';
-
 import 'package:collection/collection.dart';
-import 'package:quill_format/quill_format.dart';
+import 'package:quiver/core.dart';
 
 const _dataEquality = DeepCollectionEquality();
 

@@ -1,6 +1,6 @@
 import 'package:collection/collection.dart';
 import 'package:notus_format/src/flutter/colors.dart';
-import 'package:quill_format/quill_format.dart';
+import 'package:quiver/core.dart';
 
 /// Scope of a style attribute, defines context in which an attribute can be
 /// applied.
